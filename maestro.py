@@ -1,3 +1,4 @@
+from db import *
 from copaapi import *
 import threading
 import time
@@ -75,6 +76,12 @@ def implantar_antena(nome_antena):
 
 	#montar string
 	string_a_substituir = "@split1=" + ip_split1 +"@split2=" + ip_split2 + "@split3=" + ip_split3 + "@usrp=" + ip_usrp + "@rx=" + ip_rx
+	
+	executa_sqlite("insert into instancias(dc, tipo, nome, antena, ip) values('edge','split1', '" + nome_antena + "split1', '" + nome_antena + "','" + ip_split1 + "')", True)
+	executa_sqlite("insert into instancias(dc, tipo, nome, antena, ip) values('regional','split2', '" + nome_antena + "split2', '" + nome_antena + "','" + ip_split2 + "')", True)
+	executa_sqlite("insert into instancias(dc, tipo, nome, antena, ip) values('central','split3', '" + nome_antena + "split3', '" + nome_antena + "','" + ip_split3 + "')", True)
+	executa_sqlite("insert into instancias(dc, tipo, nome, antena, ip) values('central','usrp', '" + nome_antena + "usrp', '" + nome_antena + "','" + ip_usrp + "')", True)
+	executa_sqlite("insert into instancias(dc, tipo, nome, antena, ip) values('central','rx', '" + nome_antena + "rx', '" + nome_antena + "','" + ip_rx + "')", True)
 	
 	print string_a_substituir
 	
@@ -170,12 +177,29 @@ def implantar_antena(nome_antena):
 	#arp -s 192.168.200.2
 	print 'Fim da implantacao'
 
+def deletar_antena(nome_antena):
+	for row in executa_sqlite("select dc, nome from instancias where antena = '" + nome_antena + "'"):
+		req_api(row[0], row[1], "stop")
+		req_api(row[0], row[1], "delete")
+	#time.sleep(20)
+	executa_sqlite("delete from instancias where antena = '" + nome_antena + "'")
+
 if __name__ == "__main__":		
 	print 'Executando Main'
 	
-	nome_antena = "antena1"		
-	implantar_antena(nome_antena)
+	nome_antena = "antena2"		
+	#implantar_antena(nome_antena)
+	#nome_antena = "antena2"
+	#implantar_antena(nome_antena)
+	deletar_antena(nome_antena)
+
 	
+	#a = req_api("edge", nome_antena + "split1", "information")
+	#print a
+	#ip_split1 =  a["result"]["network"]["eth0"]["addresses"][0]["address"]
+	
+	#for row in executa_sqlite('select * from instancias'):
+	#	print row
 	#oper = {}
 	#oper['cmd'] = ['sh', '/root/script.sh', 'split1.py']
 	#a = req_api("edge", nome_antena + "split1", "command_execution", oper)
@@ -195,7 +219,6 @@ if __name__ == "__main__":
 	
 	
 	#print ip_rx
-	
 	
 	#a = req_api("regional", nome_antena + "rx", "information")
 	#ip_rx =  a["result"]["network"]["eth0"]["addresses"][0]["address"]
