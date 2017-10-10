@@ -2,8 +2,9 @@ from db import *
 from copaapi import *
 import threading
 import time
+import string
 
-ASSINATURA_IMAGEM = 'f21c575e124d'
+ASSINATURA_IMAGEM = '49a3367db269'
 
 #req_api(container_pool, container_name, operation, parameters={}):
 
@@ -14,6 +15,7 @@ def implantar_antena(nome_antena):
 	
 	global ASSINATURA_IMAGEM
 	
+	print 'implantando antena ' + nome_antena
 	print 'Implantando Split 1'
 	#t1 = threading.Thread(name='non-daemon', target=req_api, args=["edge", nome_antena + "split1", "create", {"image_type":ASSINATURA_IMAGEM}])
 	t1 = threading.Thread(name='non-daemon', target=req_api, args=["edge", nome_antena + "split1", "create", {"image_type":ASSINATURA_IMAGEM}])
@@ -46,17 +48,27 @@ def implantar_antena(nome_antena):
 	
 	#a = req_api("edge", nome_antena + "split1", "start")
 	a = req_api("edge", nome_antena + "split1", "start")
-	print a["result"]
+	print a["message"]
 	#a = req_api("edge", nome_antena + "split2", "start")
 	a = req_api("regional", nome_antena + "split2", "start")
-	print a["result"]
+	print a["message"]
 	a = req_api("central", nome_antena + "split3", "start")
-	print a["result"]
+	print a["message"]
 	a = req_api("central", nome_antena + "rx", "start")
-	print a["result"]
+	print a["message"]
 	a = req_api("central", nome_antena + "usrp", "start")
 	
-	time.sleep(50)
+	time.sleep(60)
+
+	oper = {}
+	oper['cmd'] = ['dhclient', 'eth0']
+	a = req_api("edge", nome_antena + "split1", "command_execution", oper)
+	a = req_api("regional", nome_antena + "split2", "command_execution", oper)
+	a = req_api("central", nome_antena + "split3", "command_execution", oper)
+	a = req_api("central", nome_antena + "rx", "command_execution", oper)
+	a = req_api("central", nome_antena + "usrp", "command_execution", oper)
+
+	time.sleep(60)
 	
 	#obter o ip de cada instancia
 	a = req_api("edge", nome_antena + "split1", "information")
@@ -178,20 +190,106 @@ def implantar_antena(nome_antena):
 	print 'Fim da implantacao'
 
 def deletar_antena(nome_antena):
+	p = 0
 	for row in executa_sqlite("select dc, nome from instancias where antena = '" + nome_antena + "'"):
-		req_api(row[0], row[1], "stop")
-		req_api(row[0], row[1], "delete")
+		a = req_api(row[0], row[1], "stop")
+		print a
+		a = req_api(row[0], row[1], "delete")
+		print a
+		p = p + 1
 	#time.sleep(20)
-	executa_sqlite("delete from instancias where antena = '" + nome_antena + "'")
+	if p > 0:
+		executa_sqlite("delete from instancias where antena = '" + nome_antena + "'")
+	else:
+		print 'Nao existem instancias para serem deletadas (' + nome_antena + ')'
+
+def coleta_flows():
+	oper = {}
+	#oper["cmd"] = ['ls', '-la']
+	oper["cmd"] = ["nfdump", "-o", "csv", "-R", "/tmp/tsflow/", "-s", "record/bytes"]
+	return req_api("", "", 'copa_host_command', oper)["result"]
+
+def formata_flows():
+	retorno = {}
+	res = coleta_flows()
+	linhas = res.split('\n')
+	for l in linhas:
+		c = l.split(',')
+		if len(c) > 15:
+			if c[12].isnumeric():
+				origem = c[3]
+				destino = c[4]
+				trafego = float(c[12]) / (1024 ** 3)
+				porta = c[6]
+				retorno[origem] = {}
+				retorno[origem][destino] = {}
+				retorno[origem][destino][porta] = trafego
+	return retorno
+				#print c[3] + '-' + c[4] + '-' + c[6] + '-' + str(trafego)
 
 if __name__ == "__main__":		
 	print 'Executando Main'
 	
-	nome_antena = "antena2"		
+	#nome_antena = "antena1"
+	#deletar_antena("antena1")
+	#formata_flows()
+
+	#a = req_api("edge", nome_antena + "split1", "information")
+	#print a
+	#ip_split1 =  a["result"]["network"]["eth0"]["addresses"][0]["address"]
+
+	#print formata_flows()
+
+	implantar_antena("antena1")
+	implantar_antena("antena2")
+	implantar_antena("antena3")
+	implantar_antena("antena4")
+	implantar_antena("antena5")
+	implantar_antena("antena6")
+	implantar_antena("antena7")
+	implantar_antena("antena8")
+	implantar_antena("antena9")
+	implantar_antena("antena10")
+	implantar_antena("antena11")
+	implantar_antena("antena12")
+	implantar_antena("antena13")
+	implantar_antena("antena14")
+	implantar_antena("antena15")
+	implantar_antena("antena16")
+
+	#implantar_antena("antena1")
+	'''implantar_antena("antena7")
+	implantar_antena("antena8")
+	implantar_antena("antena9")
+	implantar_antena("antena10")'''
+
+	'''deletar_antena("antena1")
+	deletar_antena("antena2")
+	deletar_antena("antena3")
+	deletar_antena("antena4")
+	deletar_antena("antena5")
+	deletar_antena("antena6")
+	deletar_antena("antena7")
+	deletar_antena("antena8")
+	deletar_antena("antena9")
+	deletar_antena("antena10")
+	deletar_antena("antena11")
+	deletar_antena("antena12")
+	deletar_antena("antena13")
+	deletar_antena("antena14")
+	deletar_antena("antena15")
+	deletar_antena("antena16")'''
 	#implantar_antena(nome_antena)
 	#nome_antena = "antena2"
 	#implantar_antena(nome_antena)
-	deletar_antena(nome_antena)
+
+	#nome_antena = 'antena3'
+	#a = req_api("central", nome_antena + "split3", "information")
+	#print a
+	#ip_split3 =  a["result"]["network"]["eth0"]["addresses"][0]["address"]
+	
+
+	
 
 	
 	#a = req_api("edge", nome_antena + "split1", "information")
