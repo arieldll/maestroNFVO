@@ -227,6 +227,17 @@ def formata_flows():
 	return retorno
 				#print c[3] + '-' + c[4] + '-' + c[6] + '-' + str(trafego)
 
+def retorna_informacoes_hosts():
+	oper = {}	
+	oper['method'] = 'executa_snmp'
+	oper['args'] = "'192.168.122.168'"
+	edge = req_api("", "", 'copa_module_execution', oper)
+	oper['args'] = "'192.168.122.169'"
+	regional = req_api("", "", 'copa_module_execution', oper)
+	oper['args'] = "'192.168.122.170'"
+	central = req_api("", "", 'copa_module_execution', oper)
+	return edge, regional, central
+
 if __name__ == "__main__":		
 	print 'Executando Main'
 	
@@ -239,8 +250,13 @@ if __name__ == "__main__":
 	#ip_split1 =  a["result"]["network"]["eth0"]["addresses"][0]["address"]
 
 	#print formata_flows()
+	
+	edge, regional, central = retorna_informacoes_hosts()
+	
 
-	implantar_antena("antena1")
+	print edge, regional, central
+
+	'''implantar_antena("antena1")
 	implantar_antena("antena2")
 	implantar_antena("antena3")
 	implantar_antena("antena4")
@@ -255,7 +271,7 @@ if __name__ == "__main__":
 	implantar_antena("antena13")
 	implantar_antena("antena14")
 	implantar_antena("antena15")
-	implantar_antena("antena16")
+	implantar_antena("antena16")'''
 
 	#implantar_antena("antena1")
 	'''implantar_antena("antena7")
