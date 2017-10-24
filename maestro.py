@@ -3,6 +3,9 @@ from copaapi import *
 import threading
 import time
 import string
+import subprocess
+import pkgutil
+import sys
 
 ASSINATURA_IMAGEM = '49a3367db269'
 
@@ -237,10 +240,17 @@ def retorna_informacoes_hosts():
 	oper['args'] = "'192.168.122.170'"
 	central = req_api("", "", 'copa_module_execution', oper)
 	return edge, regional, central
+	
+def retorna_informacoes_flows():
+	return formata_flows()
 
 if __name__ == "__main__":		
 	print 'Executando Main'
-	
+	dirname = '/home/ariel/maestro/maestroNFVO/algoritmos'
+	for importer, package_name, _ in pkgutil.iter_modules([dirname]):
+		full_package_name = '%s.%s' % (dirname, package_name)
+		module = importer.find_module(package_name).load_module(full_package_name)	
+	module.maestro_main()
 	#nome_antena = "antena1"
 	#deletar_antena("antena1")
 	#formata_flows()
@@ -251,10 +261,10 @@ if __name__ == "__main__":
 
 	#print formata_flows()
 	
-	edge, regional, central = retorna_informacoes_hosts()
-	
+	#edge, regional, central = retorna_informacoes_hosts()
+	#print retorna_informacoes_flows()
 
-	print edge, regional, central
+	#print edge, regional, central
 
 	'''implantar_antena("antena1")
 	implantar_antena("antena2")
@@ -303,10 +313,6 @@ if __name__ == "__main__":
 	#a = req_api("central", nome_antena + "split3", "information")
 	#print a
 	#ip_split3 =  a["result"]["network"]["eth0"]["addresses"][0]["address"]
-	
-
-	
-
 	
 	#a = req_api("edge", nome_antena + "split1", "information")
 	#print a
