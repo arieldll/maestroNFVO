@@ -11,8 +11,6 @@ ASSINATURA_IMAGEM = '49a3367db269'
 
 #req_api(container_pool, container_name, operation, parameters={}):
 
-
-
 def implantar_antena(nome_antena):	
 	#split 1 e 2 estavam na edge
 	
@@ -194,6 +192,7 @@ def implantar_antena(nome_antena):
 
 def deletar_antena(nome_antena):
 	p = 0
+	print 'Iniciar a remocao da antena ' + nome_antena
 	for row in executa_sqlite("select dc, nome from instancias where antena = '" + nome_antena + "'"):
 		a = req_api(row[0], row[1], "stop")
 		print a
@@ -203,6 +202,7 @@ def deletar_antena(nome_antena):
 	#time.sleep(20)
 	if p > 0:
 		executa_sqlite("delete from instancias where antena = '" + nome_antena + "'")
+		print nome_antena + ' foi removida com sucesso!'
 	else:
 		print 'Nao existem instancias para serem deletadas (' + nome_antena + ')'
 
@@ -243,6 +243,33 @@ def retorna_informacoes_hosts():
 	
 def retorna_informacoes_flows():
 	return formata_flows()
+	
+def retorna_todos_containers():
+	antenas = {}
+	for row in executa_sqlite("select dc, nome, tipo, antena from instancias"):
+		if (not row[0] in antenas):
+			antenas[row[0]] = []
+		ant = {}
+		ant["nome"] = row[1]
+		ant["tipo"] = row[2]
+		ant["antena"] = row[3]
+		antenas[row[0]].append(ant)
+	return antenas
+
+def migrar(dc_origem, nome_containter, dc_destino):
+	k = 0
+	cl = ''
+	while k < 3: #tres tentativas
+		oper = {}
+		oper['cmd'] = ['/etc/init.d/apparmor', 'teardown'] #desligar o apparmor
+		a = req_api(dc_origem, nome_containter, "command_execution", oper)
+		a = req_api(dc_origem, nome_containter, "migrate", {"destination_pool": dc_destino})
+		k += 1 #morre uma tentativa
+		if int(a['code']) == 0:		
+			k += 5 #se migrou ja era, volta
+			executa_sqlite("update instancias set dc = '" + dc_destino + "' where dc = '" + dc_origem  + "' and nome = '" + nome_containter + "'", True)
+		cl = a
+	return cl
 
 if __name__ == "__main__":		
 	print 'Executando Main'
@@ -251,6 +278,23 @@ if __name__ == "__main__":
 		full_package_name = '%s.%s' % (dirname, package_name)
 		module = importer.find_module(package_name).load_module(full_package_name)	
 	module.maestro_main()
+	
+	'''deletar_antena('antena1')
+	deletar_antena('antena2')
+	deletar_antena('antena3')
+	deletar_antena('antena4')
+	deletar_antena('antena5')
+	deletar_antena('antena6')
+	deletar_antena('antena7')
+	deletar_antena('antena8')
+	deletar_antena('antena9')
+	deletar_antena('antena10')
+	deletar_antena('antena11')
+	deletar_antena('antena12')
+	deletar_antena('antena13')
+	deletar_antena('antena14')
+	deletar_antena('antena15')
+	deletar_antena('antena16')'''
 	#nome_antena = "antena1"
 	#deletar_antena("antena1")
 	#formata_flows()
@@ -282,7 +326,6 @@ if __name__ == "__main__":
 	implantar_antena("antena14")
 	implantar_antena("antena15")
 	implantar_antena("antena16")'''
-
 	#implantar_antena("antena1")
 	'''implantar_antena("antena7")
 	implantar_antena("antena8")
