@@ -11,90 +11,107 @@ ASSINATURA_IMAGEM = '49a3367db269'
 
 #req_api(container_pool, container_name, operation, parameters={}):
 
-def implantar_antena(nome_antena):	
+def implantar_antena(nome_antena, lista_implantacao):	
 	#split 1 e 2 estavam na edge
 	
 	global ASSINATURA_IMAGEM
-	
+	print lista_implantacao
+	threads = []
 	print 'implantando antena ' + nome_antena
-	print 'Implantando Split 1'
-	#t1 = threading.Thread(name='non-daemon', target=req_api, args=["edge", nome_antena + "split1", "create", {"image_type":ASSINATURA_IMAGEM}])
-	t1 = threading.Thread(name='non-daemon', target=req_api, args=["edge", nome_antena + "split1", "create", {"image_type":ASSINATURA_IMAGEM}])
-	t1.start()
+	for i in lista_implantacao:
+		#print '.....', i, '......'		
+		print 'Implantando Split ' + i["tipo"]
+		#t1 = threading.Thread(name='non-daemon', target=req_api, args=["edge", nome_antena + "split1", "create", {"image_type":ASSINATURA_IMAGEM}])
+		t1 = threading.Thread(name='non-daemon', target=req_api, args=[i["dc"], nome_antena + i["tipo"], "create", {"image_type":ASSINATURA_IMAGEM}])		
+		threads.append(t1)
+		t1.start()
+		
+		'''print 'Implantando Split 2'
+		#t2 = threading.Thread(name='non-daemon', target=req_api, args=["edge", nome_antena + "split2", "create", {"image_type":ASSINATURA_IMAGEM}])
+		t2 = threading.Thread(name='non-daemon', target=req_api, args=["regional", nome_antena + "split2", "create", {"image_type":ASSINATURA_IMAGEM}])
+		t2.start()
+		
+		print 'Implantando Split 3'
+		t3 = threading.Thread(name='non-daemon', target=req_api, args=["central", nome_antena + "split3", "create", {"image_type":ASSINATURA_IMAGEM}])
+		t3.start()
+		
+		print 'Implantando RX'
+		t4 = threading.Thread(name='non-daemon', target=req_api, args=["central", nome_antena + "rx", "create", {"image_type":ASSINATURA_IMAGEM}])
+		t4.start()
+		
+		print 'Implantando USRP'
+		t5 = threading.Thread(name='non-daemon', target=req_api, args=["central", nome_antena + "usrp", "create", {"image_type":ASSINATURA_IMAGEM}])
+		t5.start()'''
 	
-	print 'Implantando Split 2'
-	#t2 = threading.Thread(name='non-daemon', target=req_api, args=["edge", nome_antena + "split2", "create", {"image_type":ASSINATURA_IMAGEM}])
-	t2 = threading.Thread(name='non-daemon', target=req_api, args=["regional", nome_antena + "split2", "create", {"image_type":ASSINATURA_IMAGEM}])
-	t2.start()
-	
-	print 'Implantando Split 3'
-	t3 = threading.Thread(name='non-daemon', target=req_api, args=["central", nome_antena + "split3", "create", {"image_type":ASSINATURA_IMAGEM}])
-	t3.start()
-	
-	print 'Implantando RX'
-	t4 = threading.Thread(name='non-daemon', target=req_api, args=["central", nome_antena + "rx", "create", {"image_type":ASSINATURA_IMAGEM}])
-	t4.start()
-	
-	print 'Implantando USRP'
-	t5 = threading.Thread(name='non-daemon', target=req_api, args=["central", nome_antena + "usrp", "create", {"image_type":ASSINATURA_IMAGEM}])
-	t5.start()
-	
-	t1.join()
+	for thread in threads: 	
+		thread.join()
+	'''t1.join()
 	t2.join()
 	t3.join()
 	t4.join()
-	t5.join()
+	t5.join()'''
 	
+	time.sleep(10)
 	#inicializar containers
+	for i in lista_implantacao:
+		a = req_api(i["dc"], nome_antena + i["tipo"], "start")
+		print i["tipo"] + '........'
+		print a["message"]
 	
-	#a = req_api("edge", nome_antena + "split1", "start")
-	a = req_api("edge", nome_antena + "split1", "start")
-	print a["message"]
-	#a = req_api("edge", nome_antena + "split2", "start")
+	'''#a = req_api("edge", nome_antena + "split2", "start")
 	a = req_api("regional", nome_antena + "split2", "start")
 	print a["message"]
 	a = req_api("central", nome_antena + "split3", "start")
 	print a["message"]
 	a = req_api("central", nome_antena + "rx", "start")
 	print a["message"]
-	a = req_api("central", nome_antena + "usrp", "start")
+	a = req_api("central", nome_antena + "usrp", "start")'''
 	
 	time.sleep(60)
 
 	oper = {}
 	oper['cmd'] = ['dhclient', 'eth0']
-	a = req_api("edge", nome_antena + "split1", "command_execution", oper)
-	a = req_api("regional", nome_antena + "split2", "command_execution", oper)
-	a = req_api("central", nome_antena + "split3", "command_execution", oper)
-	a = req_api("central", nome_antena + "rx", "command_execution", oper)
-	a = req_api("central", nome_antena + "usrp", "command_execution", oper)
+	
+	for i in lista_implantacao:
+		a = req_api(i["dc"], nome_antena + i["tipo"], "command_execution", oper)
+		'''a = req_api("regional", nome_antena + "split2", "command_execution", oper)
+		a = req_api("central", nome_antena + "split3", "command_execution", oper)
+		a = req_api("central", nome_antena + "rx", "command_execution", oper)
+		a = req_api("central", nome_antena + "usrp", "command_execution", oper)'''
 
 	time.sleep(60)
 	
 	#obter o ip de cada instancia
-	a = req_api("edge", nome_antena + "split1", "information")
-	ip_split1 =  a["result"]["network"]["eth0"]["addresses"][0]["address"]
-	
-	a = req_api("regional", nome_antena + "split2", "information")
-	ip_split2 =  a["result"]["network"]["eth0"]["addresses"][0]["address"]
-	
-	a = req_api("central", nome_antena + "split3", "information")
-	ip_split3 =  a["result"]["network"]["eth0"]["addresses"][0]["address"]
-	
-	a = req_api("central", nome_antena + "rx", "information")
-	ip_rx =  a["result"]["network"]["eth0"]["addresses"][0]["address"]
-	
-	a = req_api("central", nome_antena + "usrp", "information")
-	ip_usrp =  a["result"]["network"]["eth0"]["addresses"][0]["address"]
+	ip_por_tipo = {}
+	for i in lista_implantacao:		
+		a = req_api(i["dc"], nome_antena + i["tipo"], "information")
+		print a
+		tipo_ip = i["tipo"]
+		oresult = a["result"]["network"]["eth0"]["addresses"][0]["address"]
+		ip_por_tipo[tipo_ip] =  oresult
+		'''a = req_api("regional", nome_antena + "split2", "information")
+		ip_split2 =  a["result"]["network"]["eth0"]["addresses"][0]["address"]
+		
+		a = req_api("central", nome_antena + "split3", "information")
+		ip_split3 =  a["result"]["network"]["eth0"]["addresses"][0]["address"]
+		
+		a = req_api("central", nome_antena + "rx", "information")
+		ip_rx =  a["result"]["network"]["eth0"]["addresses"][0]["address"]
+		
+		a = req_api("central", nome_antena + "usrp", "information")
+		ip_usrp =  a["result"]["network"]["eth0"]["addresses"][0]["address"]'''
 
 	#montar string
-	string_a_substituir = "@split1=" + ip_split1 +"@split2=" + ip_split2 + "@split3=" + ip_split3 + "@usrp=" + ip_usrp + "@rx=" + ip_rx
+	string_a_substituir = "@split1=" + ip_por_tipo["split1"] +"@split2=" + ip_por_tipo["split2"] + "@split3=" + ip_por_tipo["split3"] + "@usrp=" + ip_por_tipo["usrp"] + "@rx=" + ip_por_tipo["rx"]
 	
-	executa_sqlite("insert into instancias(dc, tipo, nome, antena, ip) values('edge','split1', '" + nome_antena + "split1', '" + nome_antena + "','" + ip_split1 + "')", True)
-	executa_sqlite("insert into instancias(dc, tipo, nome, antena, ip) values('regional','split2', '" + nome_antena + "split2', '" + nome_antena + "','" + ip_split2 + "')", True)
+	for i in lista_implantacao:
+		ipsx = ip_por_tipo[i["tipo"]]
+		executa_sqlite("insert into instancias(dc, tipo, nome, antena, ip) values('" + i["dc"] + "', '" + i["tipo"] + "', '" + nome_antena + i["tipo"] + "', '" + nome_antena + "','" + ipsx + "')", True)
+	
+	'''executa_sqlite("insert into instancias(dc, tipo, nome, antena, ip) values('regional','split2', '" + nome_antena + "split2', '" + nome_antena + "','" + ip_split2 + "')", True)
 	executa_sqlite("insert into instancias(dc, tipo, nome, antena, ip) values('central','split3', '" + nome_antena + "split3', '" + nome_antena + "','" + ip_split3 + "')", True)
 	executa_sqlite("insert into instancias(dc, tipo, nome, antena, ip) values('central','usrp', '" + nome_antena + "usrp', '" + nome_antena + "','" + ip_usrp + "')", True)
-	executa_sqlite("insert into instancias(dc, tipo, nome, antena, ip) values('central','rx', '" + nome_antena + "rx', '" + nome_antena + "','" + ip_rx + "')", True)
+	executa_sqlite("insert into instancias(dc, tipo, nome, antena, ip) values('central','rx', '" + nome_antena + "rx', '" + nome_antena + "','" + ip_rx + "')", True)'''
 	
 	print string_a_substituir
 	
@@ -102,46 +119,66 @@ def implantar_antena(nome_antena):
 	oper['cmd'] = ['python', '/root/replace.py', '/root/fg-stuff/default', string_a_substituir]
 	
 	#substituir arquivo de configuracao
-	a = req_api("edge", nome_antena + "split1", "command_execution", oper)
-	a = req_api("regional", nome_antena + "split2", "command_execution", oper)
-	a = req_api("central", nome_antena + "split3", "command_execution", oper)
-	a = req_api("central", nome_antena + "rx", "command_execution", oper)
-	a = req_api("central", nome_antena + "usrp", "command_execution", oper)
+	for i in lista_implantacao:
+		a = req_api(i["dc"], nome_antena + i["tipo"], "command_execution", oper)
+		'''a = req_api("regional", nome_antena + "split2", "command_execution", oper)
+		a = req_api("central", nome_antena + "split3", "command_execution", oper)
+		a = req_api("central", nome_antena + "rx", "command_execution", oper)
+		a = req_api("central", nome_antena + "usrp", "command_execution", oper)'''
 	
 	#criar interfaces tap0 no split 1 e no RX
 	oper = {}
 	oper['cmd'] = ['ip', 'tuntap', 'add', 'tap0', 'mode', 'tap']
-	a = req_api("edge", nome_antena + "split1", "command_execution", oper)
-	a = req_api("central", nome_antena + "rx", "command_execution", oper)
+	for i in lista_implantacao:
+		if i["tipo"] == 'split1' or i["tipo"] == 'rx':
+			a = req_api(i["dc"], nome_antena + i["tipo"], "command_execution", oper)
+		#a = req_api("central", nome_antena + "rx", "command_execution", oper)
 	
 	oper = {}
 	oper['cmd'] = ['ifconfig', 'tap0', 'up']
-	a = req_api("edge", nome_antena + "split1", "command_execution", oper)
-	a = req_api("central", nome_antena + "rx", "command_execution", oper)
+	for i in lista_implantacao:
+		if i["tipo"] == 'split1' or i["tipo"] == 'rx':
+			a = req_api(i["dc"], nome_antena + i["tipo"], "command_execution", oper)
+		#a = req_api("central", nome_antena + "rx", "command_execution", oper)
 
 	oper = {}
 	oper['cmd'] = ['ifconfig', 'tap0', '192.168.200.1']
-	a = req_api("edge", nome_antena + "split1", "command_execution", oper)
+	for i in lista_implantacao:
+		if i["tipo"] == 'split1':
+			a = req_api(i["dc"], nome_antena + i["tipo"], "command_execution", oper)
+			break
 	
 	oper = {}
 	oper['cmd'] = ['ifconfig', 'tap0', '192.168.200.2']
-	a = req_api("central", nome_antena + "rx", "command_execution", oper)
+	for i in lista_implantacao:
+		if i["tipo"] == 'rx':
+			a = req_api(i["dc"], nome_antena + i["tipo"], "command_execution", oper)
+			break
 	
+	addr_tipo = {}
 	#pegar o mac_address	
-	a = req_api("edge", nome_antena + "split1", "information")
-	addr_split1 =  a["result"]["network"]["tap0"]["hwaddr"]
+	for i in lista_implantacao:
+		if i["tipo"] == 'rx' or i["tipo"] == 'split1':
+			a = req_api(i["dc"], nome_antena + i["tipo"], "information")
+			addr_tipo[i["tipo"]] =  a["result"]["network"]["tap0"]["hwaddr"]
 	
-	a = req_api("central", nome_antena + "rx", "information")
-	addr_rx =  a["result"]["network"]["tap0"]["hwaddr"]
+	'''a = req_api("central", nome_antena + "rx", "information")
+	addr_rx =  a["result"]["network"]["tap0"]["hwaddr"]'''
 	
 	#adicionar o mac_address no rx e no split1 (um contra o outro)
 	oper = {}
-	oper['cmd'] = ['arp', '-s', '192.168.200.2', addr_rx]
-	a = req_api("edge", nome_antena + "split1", "command_execution", oper)
+	oper['cmd'] = ['arp', '-s', '192.168.200.2', addr_tipo['rx']]
+	for i in lista_implantacao:
+		if i["tipo"] == 'split1':
+			a = req_api(i["dc"], nome_antena + i["tipo"], "command_execution", oper)
+			break
 	
 	oper = {}
-	oper['cmd'] = ['arp', '-s', '192.168.200.1', addr_split1]
-	a = req_api("central", nome_antena + "rx", "command_execution", oper)
+	oper['cmd'] = ['arp', '-s', '192.168.200.1', addr_tipo['split1']]
+	for i in lista_implantacao:
+		if i['tipo'] == 'rx':
+			a = req_api(i["dc"], nome_antena + i["tipo"], "command_execution", oper)
+			break
 	
 	#----------inicializar os arquivos
 	#fazer o python path
@@ -154,11 +191,12 @@ def implantar_antena(nome_antena):
 	#a = req_api("central", nome_antena + "usrp", "command_execution", oper)
 	
 	#inicializar os arquivos
-	oper = {}
-	oper['cmd'] = ['sh', '/root/inicializador.sh', 'split1.py']
-	a = req_api("edge", nome_antena + "split1", "command_execution", oper)
+	for i in lista_implantacao:
+		oper = {}
+		oper['cmd'] = ['sh', '/root/inicializador.sh', i["tipo"] + '.py']
+		a = req_api(i["dc"], nome_antena + i["tipo"], "command_execution", oper)
 	
-	oper = {}
+	'''oper = {}
 	oper['cmd'] = ['sh', '/root/inicializador.sh', 'split2.py']
 	a = req_api("regional", nome_antena + "split2", "command_execution", oper)
 	
@@ -172,18 +210,19 @@ def implantar_antena(nome_antena):
 	
 	oper = {}
 	oper['cmd'] = ['sh', '/root/inicializador.sh', 'rx.py']
-	a = req_api("central", nome_antena + "rx", "command_execution", oper)
+	a = req_api("central", nome_antena + "rx", "command_execution", oper)'''
 	
 	
 	#desligar o apparmor
 	print 'Desligando apparmor...'
 	oper = {}
 	oper['cmd'] = ['/etc/init.d/apparmor', 'teardown']
-	a = req_api("edge", nome_antena + "split1", "command_execution", oper)
-	a = req_api("regional", nome_antena + "split2", "command_execution", oper)
-	a = req_api("central", nome_antena + "split3", "command_execution", oper)
-	a = req_api("central", nome_antena + "usrp", "command_execution", oper)
-	a = req_api("central", nome_antena + "rx", "command_execution", oper)
+	for i in lista_implantacao:
+		a = req_api(i["dc"], nome_antena + i["tipo"], "command_execution", oper)
+		'''a = req_api("regional", nome_antena + "split2", "command_execution", oper)
+		a = req_api("central", nome_antena + "split3", "command_execution", oper)
+		a = req_api("central", nome_antena + "usrp", "command_execution", oper)
+		a = req_api("central", nome_antena + "rx", "command_execution", oper)'''
 
 	#ip tuntap add tap0 mode tap && ifconfig tap0 up && ifconfig tap0 192.168.200.1
 	#arp -s 192.168.200.1 
@@ -259,25 +298,43 @@ def retorna_todos_containers():
 def migrar(dc_origem, nome_containter, dc_destino):
 	k = 0
 	cl = ''
+	tipo_split = ''
+	for i in executa_sqlite("select tipo from instancias where dc = '" + dc_origem + "' and nome = '" + nome_containter + "'"):
+		tipo_split = i[0]
+		break
+	print 'tipo de split: ', tipo_split
+	print 'iniciando processo de migracao'
 	while k < 3: #tres tentativas
 		oper = {}
 		oper['cmd'] = ['/etc/init.d/apparmor', 'teardown'] #desligar o apparmor
 		a = req_api(dc_origem, nome_containter, "command_execution", oper)
+		
+		oper = {}
+		oper['cmd'] = ['killall', 'python'] #arrancar a execucao dos splits
+		a = req_api(dc_origem, nome_containter, "command_execution", oper)
+		
+		print 'Tentativa ' + str(k + 1)
 		a = req_api(dc_origem, nome_containter, "migrate", {"destination_pool": dc_destino})
+		print a['result']
+		print a['message']
+		print a
 		k += 1 #morre uma tentativa
 		if int(a['code']) == 0:		
 			k += 5 #se migrou ja era, volta
 			executa_sqlite("update instancias set dc = '" + dc_destino + "' where dc = '" + dc_origem  + "' and nome = '" + nome_containter + "'", True)
+			oper = {}
+			oper['cmd'] = ['sh', '/root/inicializador.sh', tipo_split + '.py']
+			a = req_api(dc_destino, nome_containter, "command_execution", oper)		
 		cl = a
 	return cl
 
 if __name__ == "__main__":		
 	print 'Executando Main'
-	dirname = '/home/ariel/maestro/maestroNFVO/algoritmos'
+	'''dirname = '/home/ariel/maestro/maestroNFVO/algoritmos'
 	for importer, package_name, _ in pkgutil.iter_modules([dirname]):
 		full_package_name = '%s.%s' % (dirname, package_name)
 		module = importer.find_module(package_name).load_module(full_package_name)	
-	module.maestro_main()
+	module.maestro_main()'''
 	
 	'''deletar_antena('antena1')
 	deletar_antena('antena2')
@@ -309,7 +366,81 @@ if __name__ == "__main__":
 	#print retorna_informacoes_flows()
 
 	#print edge, regional, central
-
+	
+	
+	implantar = []
+	config = {}
+	config["dc"] = "edge"
+	config["tipo"] = "split1"	
+	implantar.append(config)
+	
+	config = {}
+	config["dc"] = "regional"
+	config["tipo"] = "split2"	
+	implantar.append(config)
+	
+	config = {}
+	config["dc"] = "central"
+	config["tipo"] = "split3"	
+	implantar.append(config)
+	
+	config = {}
+	config["dc"] = "central"
+	config["tipo"] = "usrp"	
+	implantar.append(config)
+	
+	config = {}
+	config["dc"] = "central"
+	config["tipo"] = "rx"	
+	implantar.append(config)
+	
+	implantar_antena('antena1', implantar)
+	implantar_antena('antena2', implantar)
+	implantar_antena('antena3', implantar)
+	implantar_antena('antena4', implantar)
+	implantar_antena('antena5', implantar)
+	implantar_antena('antena6', implantar)	
+	
+	implantar = []
+	config = {}
+	config["dc"] = "regional"
+	config["tipo"] = "split1"	
+	implantar.append(config)
+	
+	config = {}
+	config["dc"] = "regional"
+	config["tipo"] = "split2"	
+	implantar.append(config)
+	
+	config = {}
+	config["dc"] = "central"
+	config["tipo"] = "split3"	
+	implantar.append(config)
+	
+	config = {}
+	config["dc"] = "central"
+	config["tipo"] = "usrp"	
+	implantar.append(config)
+	
+	config = {}
+	config["dc"] = "central"
+	config["tipo"] = "rx"	
+	implantar.append(config)
+	
+	implantar_antena('antena7', implantar)
+	implantar_antena('antena8', implantar)
+	implantar_antena('antena9', implantar)
+	implantar_antena('antena10', implantar)
+	implantar_antena('antena11', implantar)
+	implantar_antena('antena12', implantar)
+	implantar_antena('antena13', implantar)
+	implantar_antena('antena14', implantar)
+	implantar_antena('antena15', implantar)
+	implantar_antena('antena16', implantar)
+	
+	#deletar_antena('antena1')
+	
+	#migrar('central', 'antena1rx', 'regional')
 	'''implantar_antena("antena1")
 	implantar_antena("antena2")
 	implantar_antena("antena3")

@@ -6,7 +6,7 @@ def retorna_informacao_container(dc, container):
 
 def maestro_main():
 	print 'Maestro Orchestrator Loop'
-	a = 0
+	repete = 0
 	while True:
 		info_edge, info_regional, info_central = retorna_informacoes_hosts()		
 		info_edge = info_edge["result"]
@@ -50,4 +50,4 @@ def maestro_main():
 			print 'Nada a fazer cabron'
 		#aguardar tempo
 		time.sleep(10)
-		a = a + 1
+		repete += 1
