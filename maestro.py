@@ -313,6 +313,10 @@ def migrar(dc_origem, nome_containter, dc_destino):
 		oper['cmd'] = ['killall', 'python'] #arrancar a execucao dos splits
 		a = req_api(dc_origem, nome_containter, "command_execution", oper)
 		
+		#oper = {}
+		#oper['cmd'] = ['killall', 'ping'] #arrancar a execucao dos splits
+		#a = req_api(dc_origem, nome_containter, "command_execution", oper)
+		
 		print 'Tentativa ' + str(k + 1)
 		a = req_api(dc_origem, nome_containter, "migrate", {"destination_pool": dc_destino})
 		print a['result']
@@ -324,7 +328,16 @@ def migrar(dc_origem, nome_containter, dc_destino):
 			executa_sqlite("update instancias set dc = '" + dc_destino + "' where dc = '" + dc_origem  + "' and nome = '" + nome_containter + "'", True)
 			oper = {}
 			oper['cmd'] = ['sh', '/root/inicializador.sh', tipo_split + '.py']
-			a = req_api(dc_destino, nome_containter, "command_execution", oper)		
+			pax = req_api(dc_destino, nome_containter, "command_execution", oper)		
+			
+			if tipo_split == 'split1':
+				print 'tentando reiniciar o ping....'
+				oper = {}
+				oper['cmd'] = ['ping', '-I', 'tap0', '192.168.200.2', '-f', '&']
+				retx = req_api(dc_destino, nome_containter, "command_execution", oper)	
+				print retx['result']
+			else:
+				print 'nao eh do tipo split1' + tipo_split
 		cl = a
 	return cl
 
@@ -368,7 +381,7 @@ if __name__ == "__main__":
 	#print edge, regional, central
 	
 	
-	implantar = []
+	'''implantar = []
 	config = {}
 	config["dc"] = "edge"
 	config["tipo"] = "split1"	
@@ -399,7 +412,7 @@ if __name__ == "__main__":
 	implantar_antena('antena3', implantar)
 	implantar_antena('antena4', implantar)
 	implantar_antena('antena5', implantar)
-	implantar_antena('antena6', implantar)	
+	implantar_antena('antena6', implantar)
 	
 	implantar = []
 	config = {}
@@ -432,14 +445,31 @@ if __name__ == "__main__":
 	implantar_antena('antena9', implantar)
 	implantar_antena('antena10', implantar)
 	implantar_antena('antena11', implantar)
-	implantar_antena('antena12', implantar)
-	implantar_antena('antena13', implantar)
+	implantar_antena('antena12', implantar)'''
+	'''implantar_antena('antena13', implantar)
 	implantar_antena('antena14', implantar)
 	implantar_antena('antena15', implantar)
-	implantar_antena('antena16', implantar)
+	implantar_antena('antena16', implantar)'''
 	
+	#deletar_antena('antena13')
+	#deletar_antena('antena12')
+	#deletar_antena('antena11')
+	#deletar_antena('antena10')
+	#deletar_antena('antena9')
+	#deletar_antena('antena8')
+	#deletar_antena('antena7')
+	#deletar_antena('antena6')
+	#deletar_antena('antena5')
+	#deletar_antena('antena4')
+	#deletar_antena('antena3')
+	#deletar_antena('antena2')
 	#deletar_antena('antena1')
 	
+	#implantar_antena("antena1", implantar)
+	#deletar_antena("antena1")
+	
+	#migrar('regional', 'antena6split1', 'edge')
+	migrar('edge', 'antena4split1', 'regional')
 	#migrar('central', 'antena1rx', 'regional')
 	'''implantar_antena("antena1")
 	implantar_antena("antena2")

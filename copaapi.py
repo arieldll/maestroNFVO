@@ -34,6 +34,7 @@ def req_api(container_pool, container_name, operation, parameters={}):
 
 #print req_api("Server1", "RX", "migrate", {"destination_pool": "Server2"})
 
+
 #print req_api("Server1", "VideoServer", "information")
 
 #print req_api("Server1", "VideoServer", "information")['result']['network']['eth0']['counters']['packets_received']
