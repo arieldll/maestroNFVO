@@ -7,7 +7,7 @@ import subprocess
 import pkgutil
 import sys
 
-ASSINATURA_IMAGEM = '49a3367db269'
+ASSINATURA_IMAGEM = '86d2a9b674b2'
 
 #req_api(container_pool, container_name, operation, parameters={}):
 
@@ -193,7 +193,7 @@ def implantar_antena(nome_antena, lista_implantacao):
 	#inicializar os arquivos
 	for i in lista_implantacao:
 		oper = {}
-		oper['cmd'] = ['sh', '/root/inicializador.sh', i["tipo"] + '.py']
+		oper['cmd'] = ['nohup', '/root/inicializador.sh', i["tipo"] + '.py'] #tava sh
 		a = req_api(i["dc"], nome_antena + i["tipo"], "command_execution", oper)
 	
 	'''oper = {}
@@ -210,8 +210,7 @@ def implantar_antena(nome_antena, lista_implantacao):
 	
 	oper = {}
 	oper['cmd'] = ['sh', '/root/inicializador.sh', 'rx.py']
-	a = req_api("central", nome_antena + "rx", "command_execution", oper)'''
-	
+	a = req_api("central", nome_antena + "rx", "command_execution", oper)'''	
 	
 	#desligar o apparmor
 	print 'Desligando apparmor...'
@@ -227,6 +226,21 @@ def implantar_antena(nome_antena, lista_implantacao):
 	#ip tuntap add tap0 mode tap && ifconfig tap0 up && ifconfig tap0 192.168.200.1
 	#arp -s 192.168.200.1 
 	#arp -s 192.168.200.2
+	
+	#ping -I tap0 192.168.200.2 -f > /dev/null &
+	#print 'Dando permissao...'
+	#oper = {}
+	#oper['cmd'] = ['chmod', '+x', '/root/gera_pings.sh']
+	#a = req_api(i["dc"], nome_antena + i["tipo"], "command_execution", oper)
+	
+	print 'Inicializando uso...'
+	oper = {}
+	oper['cmd'] = ['sh', '/root/gera_pings.sh', '&']
+	for i in lista_implantacao:
+		if i["tipo"] == 'split1':
+			a = req_api(i["dc"], nome_antena + i["tipo"], "command_execution", oper)
+			break
+	
 	print 'Fim da implantacao'
 
 def deletar_antena(nome_antena):
@@ -310,12 +324,16 @@ def migrar(dc_origem, nome_containter, dc_destino):
 		a = req_api(dc_origem, nome_containter, "command_execution", oper)
 		
 		oper = {}
+		oper['cmd'] = ['killall', '-9', 'bash'] #feito pq pode ter terminal aberto
+		a = req_api(dc_origem, nome_containter, "command_execution", oper)
+		
+		oper = {}
 		oper['cmd'] = ['killall', 'python'] #arrancar a execucao dos splits
 		a = req_api(dc_origem, nome_containter, "command_execution", oper)
 		
-		#oper = {}
-		#oper['cmd'] = ['killall', 'ping'] #arrancar a execucao dos splits
-		#a = req_api(dc_origem, nome_containter, "command_execution", oper)
+		oper = {}
+		oper['cmd'] = ['killall', '-9', 'ping'] #arrancar a execucao dos splits
+		a = req_api(dc_origem, nome_containter, "command_execution", oper)
 		
 		print 'Tentativa ' + str(k + 1)
 		a = req_api(dc_origem, nome_containter, "migrate", {"destination_pool": dc_destino})
@@ -327,15 +345,18 @@ def migrar(dc_origem, nome_containter, dc_destino):
 			k += 5 #se migrou ja era, volta
 			executa_sqlite("update instancias set dc = '" + dc_destino + "' where dc = '" + dc_origem  + "' and nome = '" + nome_containter + "'", True)
 			oper = {}
-			oper['cmd'] = ['sh', '/root/inicializador.sh', tipo_split + '.py']
+			oper['cmd'] = ['nohup', '/root/inicializador.sh', tipo_split + '.py']
 			pax = req_api(dc_destino, nome_containter, "command_execution", oper)		
 			
 			if tipo_split == 'split1':
 				print 'tentando reiniciar o ping....'
+				#	oper = {}
+				#	oper['cmd'] = ['ping', '-I', 'tap0', '192.168.200.2', '-f', '&']
+				#	retx = req_api(dc_destino, nome_containter, "command_execution", oper)	
+				#	print retx['result']
 				oper = {}
-				oper['cmd'] = ['ping', '-I', 'tap0', '192.168.200.2', '-f', '&']
-				retx = req_api(dc_destino, nome_containter, "command_execution", oper)	
-				print retx['result']
+				oper['cmd'] = ['sh', '/root/gera_pings.sh']
+				pax = req_api(dc_destino, nome_containter, "command_execution", oper)		
 			else:
 				print 'nao eh do tipo split1' + tipo_split
 		cl = a
@@ -343,11 +364,11 @@ def migrar(dc_origem, nome_containter, dc_destino):
 
 if __name__ == "__main__":		
 	print 'Executando Main'
-	'''dirname = '/home/ariel/maestro/maestroNFVO/algoritmos'
+	dirname = '/home/ariel/maestro/maestroNFVO/algoritmos'
 	for importer, package_name, _ in pkgutil.iter_modules([dirname]):
 		full_package_name = '%s.%s' % (dirname, package_name)
 		module = importer.find_module(package_name).load_module(full_package_name)	
-	module.maestro_main()'''
+	#module.maestro_main()
 	
 	'''deletar_antena('antena1')
 	deletar_antena('antena2')
@@ -381,7 +402,7 @@ if __name__ == "__main__":
 	#print edge, regional, central
 	
 	
-	'''implantar = []
+	implantar = []
 	config = {}
 	config["dc"] = "edge"
 	config["tipo"] = "split1"	
@@ -406,7 +427,13 @@ if __name__ == "__main__":
 	config["dc"] = "central"
 	config["tipo"] = "rx"	
 	implantar.append(config)
+		
+	#implantar_antena('antena5', implantar)
+	#oper = {}
+	#oper['cmd'] = ['sh', '/root/gera_pings.sh', '&']
+	#a = req_api('edge', 'antena5split1', "command_execution", oper)
 	
+	#print 'Fim da implantacao'
 	implantar_antena('antena1', implantar)
 	implantar_antena('antena2', implantar)
 	implantar_antena('antena3', implantar)
@@ -445,7 +472,7 @@ if __name__ == "__main__":
 	implantar_antena('antena9', implantar)
 	implantar_antena('antena10', implantar)
 	implantar_antena('antena11', implantar)
-	implantar_antena('antena12', implantar)'''
+	implantar_antena('antena12', implantar)
 	'''implantar_antena('antena13', implantar)
 	implantar_antena('antena14', implantar)
 	implantar_antena('antena15', implantar)
@@ -466,10 +493,10 @@ if __name__ == "__main__":
 	#deletar_antena('antena1')
 	
 	#implantar_antena("antena1", implantar)
-	#deletar_antena("antena1")
+	#deletar_antena("antena5")
 	
-	#migrar('regional', 'antena6split1', 'edge')
-	migrar('edge', 'antena4split1', 'regional')
+	#migrar('edge', 'antena5split1', 'regional')
+	#migrar('regional', 'antena5split1', 'edge')
 	#migrar('central', 'antena1rx', 'regional')
 	'''implantar_antena("antena1")
 	implantar_antena("antena2")

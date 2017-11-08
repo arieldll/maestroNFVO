@@ -31,7 +31,7 @@ def maestro_main():
 		containers = retorna_todos_containers()
 		
 		#sobrecarga em algum cloud
-		if porc_proc_edge > 40:			
+		if porc_proc_edge > 95:			
 			move_para = 'regional'
 			if porc_mem_regional > 95:
 				move_para = 'central'
