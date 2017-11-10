@@ -6,6 +6,8 @@ import string
 import subprocess
 import pkgutil
 import sys
+import matplotlib.pyplot as plt
+import numpy as np
 
 ASSINATURA_IMAGEM = '86d2a9b674b2'
 
@@ -310,6 +312,8 @@ def retorna_todos_containers():
 		antenas[row[0]].append(ant)
 	return antenas
 
+
+
 def migrar(dc_origem, nome_containter, dc_destino):
 	k = 0
 	cl = ''
@@ -363,12 +367,71 @@ def migrar(dc_origem, nome_containter, dc_destino):
 		cl = a
 	return cl
 
+#!/usr/bin/env python3
+ 
+import random
+from collections import deque
+
+class RealtimePlot:
+    def __init__(self, axes,  color='r', max_entries = 100):
+        self.axis_x = deque(maxlen=max_entries)
+        self.axis_y = deque(maxlen=max_entries)
+        self.axes = axes
+        self.max_entries = max_entries
+        
+        self.lineplot, = axes.plot([], [], color + "o-") #ro-
+        self.axes.set_autoscaley_on(True)
+
+    def add(self, x, y):
+        self.axis_x.append(x)
+        self.axis_y.append(y)
+        self.lineplot.set_data(self.axis_x, self.axis_y)
+        self.axes.set_xlim(self.axis_x[0], self.axis_x[-1] + 1e-15)
+        self.axes.relim(); self.axes.autoscale_view() # rescale the y-axis
+
+    def animate(self, figure, callback, interval = 50):
+        import matplotlib.animation as animation
+        def wrapper(frame_index):
+            self.add(*callback(frame_index))
+            self.axes.relim(); self.axes.autoscale_view() # rescale the y-axis
+            return self.lineplot
+        animation.FuncAnimation(figure, wrapper, interval=interval)
+
+def graficos():
+    
+    start = time.time()	
+    
+    fig, axes = plt.subplots()
+    display1 = RealtimePlot(axes)
+    display1.animate(fig, lambda frame_index: (time.time() - start, random.random() * 100))
+    
+    display2 = RealtimePlot(axes)
+    display2.animate(fig, lambda frame_index: (time.time() - start, random.random() * 100))
+    
+    display3 = RealtimePlot(axes)
+    display3.animate(fig, lambda frame_index: (time.time() - start, random.random() * 100))
+    #plt.show()
+    #plt.close()
+
+    fig, axes = plt.subplots()
+    display1 = RealtimePlot(axes, 'r')
+    display2 = RealtimePlot(axes, 'b')
+    display3 = RealtimePlot(axes, 'g')
+    return display1
+    #while True:
+    #    display1.add(time.time() - start, random.random() * 100)
+    #    display2.add(time.time() - start, random.random() * 100)
+    #    display3.add(time.time() - start, random.random() * 100)
+        #plt.pause(0.001)
+
 if __name__ == "__main__":		
 	print 'Executando Main'
 	dirname = '/home/ariel/maestro/maestroNFVO/algoritmos'
 	for importer, package_name, _ in pkgutil.iter_modules([dirname]):
 		full_package_name = '%s.%s' % (dirname, package_name)
 		module = importer.find_module(package_name).load_module(full_package_name)	
+		
+	
 	module.maestro_main()
 	exit()
 	'''deletar_antena('antena1')

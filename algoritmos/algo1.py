@@ -16,6 +16,24 @@ def maestro_main():
 	FATOR["edge"] = 15
 	FATOR["regional"] = 10
 	FATOR["central"] = 6
+	
+	from matplotlib import pyplot as plt
+	fig1, axes1 = plt.subplots()
+	
+	from matplotlib import pyplot as plt2
+	fig2, axes2 = plt2.subplots()
+	
+	pg_edge = RealtimePlot(axes1, 'b')
+	pg_regional = RealtimePlot(axes1, 'g')
+	pg_central = RealtimePlot(axes1, 'r')
+	inicio_tempo_start = time.time()	
+	
+	mg_edge = RealtimePlot(axes2, 'b')
+	mg_regional = RealtimePlot(axes2, 'g')
+	mg_central = RealtimePlot(axes2, 'r')
+	inicio_tempo_start = time.time()	
+	
+	
 	while True:
 		print 'Maestro Orchestrator Loop'
 		info_edge, info_regional, info_central = retorna_informacoes_hosts()	#minuto a minuto	
@@ -58,6 +76,18 @@ def maestro_main():
 		print porc_proc_edge
 		print porc_proc_regional
 		print porc_proc_central
+		
+		#processador
+		pg_edge.add(time.time() - inicio_tempo_start, porc_proc_edge)
+		pg_regional.add(time.time() - inicio_tempo_start, porc_proc_regional)
+		pg_central.add(time.time() - inicio_tempo_start, porc_proc_central)
+		
+		#memoria
+		mg_edge.add(time.time() - inicio_tempo_start, porc_mem_edge)
+		mg_regional.add(time.time() - inicio_tempo_start, porc_mem_regional)
+		mg_central.add(time.time() - inicio_tempo_start, porc_mem_central)
+		
+		plt.pause(0.001)
 		
 		print retorna_informacoes_flows()
 		
