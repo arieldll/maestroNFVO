@@ -59,11 +59,13 @@ def maestro_main():
 		print porc_proc_regional
 		print porc_proc_central
 		
+		print retorna_informacoes_flows()
+		
 		cloud_mais_ocupado = ''
 		for c in CLOUDS:
 			disp = {}
 			print '-- Analisando CLOUD ' + c + ' -- .... Livre para ' + str(math.floor((102 - CPU[c]) / FATOR[c]))
-			if CPU[c] > 99:
+			if CPU[c] > 98:
 				for s in CLOUDS:
 					if s != c:
 						print '>' + s + ':'
@@ -84,7 +86,7 @@ def maestro_main():
 								move_de = 'edge'
 							if s == 'central':
 								move_de = 'regional'								
-						for k in containers["regional"]:
+						for k in containers[move_de]:
 							if mig < disp[s]:									
 								a = migrar(move_de, k["nome"], s)
 								a = {}
@@ -94,7 +96,8 @@ def maestro_main():
 									mig = mig + 1
 						time.sleep(130)
 						break
-		
+				else:
+					print 'Nao ha recursos disponiveis para realocar'
 		'''
 		#sobrecarga em algum cloud
 		if porc_proc_edge > 95:			

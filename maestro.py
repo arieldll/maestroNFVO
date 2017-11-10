@@ -262,7 +262,8 @@ def deletar_antena(nome_antena):
 def coleta_flows():
 	oper = {}
 	#oper["cmd"] = ['ls', '-la']
-	oper["cmd"] = ["nfdump", "-o", "csv", "-R", "/tmp/tsflow/", "-s", "record/bytes"]
+	#oper["cmd"] = ["nfdump", "-o", "csv", "-R", "/tmp/tsflow/", "-s", "record/bytes"] #acho q n esta certo
+	oper["cmd"] = ["nfdump", "-o", "csv", "-R", "/tmp/tsflow/"]
 	return req_api("", "", 'copa_host_command', oper)["result"]
 
 def formata_flows():
@@ -368,8 +369,8 @@ if __name__ == "__main__":
 	for importer, package_name, _ in pkgutil.iter_modules([dirname]):
 		full_package_name = '%s.%s' % (dirname, package_name)
 		module = importer.find_module(package_name).load_module(full_package_name)	
-	#module.maestro_main()
-	#exit()
+	module.maestro_main()
+	exit()
 	'''deletar_antena('antena1')
 	deletar_antena('antena2')
 	deletar_antena('antena3')
@@ -429,9 +430,9 @@ if __name__ == "__main__":
 	config["tipo"] = "rx"	
 	implantar.append(config)
 		
-	#implantar_antena('antena1', implantar)
-	#implantar_antena('antena2', implantar)
-	#implantar_antena('antena3', implantar)
+	implantar_antena('antena17', implantar)
+	#implantar_antena('antena17', implantar)
+	#implantar_antena('antena12', implantar)
 	#oper = {}
 	#oper['cmd'] = ['sh', '/root/gera_pings.sh', '&']
 	#a = req_api('edge', 'antena5split1', "command_execution", oper)
@@ -443,7 +444,7 @@ if __name__ == "__main__":
 	#implantar_antena('antena16', implantar)
 	#implantar_antena('antena5', implantar)
 	#implantar_antena('antena6', implantar)
-	
+	exit()
 	implantar = []
 	config = {}
 	config["dc"] = "regional"
@@ -470,12 +471,12 @@ if __name__ == "__main__":
 	config["tipo"] = "rx"	
 	implantar.append(config)
 	
-	implantar_antena('antena7', implantar)
-	implantar_antena('antena8', implantar)
-	implantar_antena('antena9', implantar)
-	#implantar_antena('antena10', implantar)
-	#implantar_antena('antena11', implantar)
-	#implantar_antena('antena12', implantar)
+	#implantar_antena('antena7', implantar)
+	#implantar_antena('antena8', implantar)
+	#implantar_antena('antena9', implantar)
+	implantar_antena('antena13', implantar)
+	implantar_antena('antena14', implantar)
+	implantar_antena('antena15', implantar)
 	'''implantar_antena('antena13', implantar)
 	implantar_antena('antena14', implantar)
 	implantar_antena('antena15', implantar)
