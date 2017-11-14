@@ -8,6 +8,8 @@ import pkgutil
 import sys
 import matplotlib.pyplot as plt
 import numpy as np
+import random
+from collections import deque
 
 ASSINATURA_IMAGEM = '86d2a9b674b2'
 
@@ -278,7 +280,8 @@ def formata_flows():
 			if c[12].isnumeric():
 				origem = c[3]
 				destino = c[4]
-				trafego = float(c[12]) / (1024 ** 3)
+				#trafego = float(c[12]) / (1024 ** 3)
+				trafego = float(c[12]) / (1024 ** 2)
 				porta = c[6]
 				retorno[origem] = {}
 				retorno[origem][destino] = {}
@@ -368,9 +371,6 @@ def migrar(dc_origem, nome_containter, dc_destino):
 	return cl
 
 #!/usr/bin/env python3
- 
-import random
-from collections import deque
 
 class RealtimePlot:
     def __init__(self, axes,  color='r', max_entries = 100):
@@ -424,6 +424,81 @@ def graficos():
     #    display3.add(time.time() - start, random.random() * 100)
         #plt.pause(0.001)
 
+def gera_informaces_banda_entre_vms():
+	ct = {}
+	acumulado = 0
+	orig_dest = {}
+	orig_dest['edge'] = {}
+	orig_dest['regional'] = {}
+	orig_dest['central'] = {}
+	
+	orig_dest['edge']['regional'] = 0	
+	orig_dest['edge']['central'] = 0	
+	orig_dest['regional']['central'] = 0
+	orig_dest['regional']['edge'] = 0
+	orig_dest['central']['edge'] = 0
+	orig_dest['central']['regional'] = 0
+	
+	for r in executa_sqlite("select dc, nome, tipo, antena, ip from instancias"):
+		ct[r[1]] = {} 		
+		ct[r[1]]['dc'] = r[0]
+		ct[r[1]]['tp'] = r[2]		
+		ct[r[1]]['at'] = r[3]		
+		ct[r[1]]['ip'] = r[4]
+	
+	fxs = retorna_informacoes_flows()
+	
+	acc = {}
+	
+	for c in ct:
+		tp = ct[c]['tp']
+		adc = ct[c]['dc']		
+		ant = ct[c]['at']
+		px = '' #proximo		
+		#print tp
+		if tp == 'split1':
+			px = 'split2'
+		elif tp == 'split2':
+			px = 'split3'
+		elif tp == 'split3':
+			px = 'usrp'
+		elif tp == 'usrp':
+			px = 'rx'
+		elif tp == 'rx':
+			px = 'split1'
+		
+		prox = ant + px
+		#print 'atual: ' + ant + tp
+		nt = ct[prox]['dc'] #proximo dc
+		#print 'prox: ' + prox
+		
+		conta = 0
+		if nt != adc:
+			ip_a = ct[c]['ip']
+			ip_b = ct[prox]['ip']
+			
+			for x in fxs:
+				if x == ip_a:
+					os = fxs[x]
+					for ts in os:
+						if ts == ip_b:
+							ls = os[ts]
+							for k in ls:
+								conta += ls[k]
+								#print ls[k]
+							#print ls
+					#print fxs[x]
+				#print x
+			##print adc, nt
+			orig_dest[adc][nt] += conta
+			acumulado += conta
+			#print ip_a, ip_p						
+			#for i in fx[ip_a][ip_p]:
+			#	print i	
+	
+	return orig_dest, acumulado
+	
+
 if __name__ == "__main__":		
 	print 'Executando Main'
 	dirname = '/home/ariel/maestro/maestroNFVO/algoritmos'
@@ -431,9 +506,10 @@ if __name__ == "__main__":
 		full_package_name = '%s.%s' % (dirname, package_name)
 		module = importer.find_module(package_name).load_module(full_package_name)	
 		
-	
-	module.maestro_main()
-	exit()
+	#gera_informaces_banda_entre_vms()	
+	#module.maestro_main()
+	#exit()
+	#deletar_antena('antena17')
 	'''deletar_antena('antena1')
 	deletar_antena('antena2')
 	deletar_antena('antena3')
@@ -493,7 +569,11 @@ if __name__ == "__main__":
 	config["tipo"] = "rx"	
 	implantar.append(config)
 		
-	implantar_antena('antena17', implantar)
+	implantar_antena('antena1', implantar)
+	implantar_antena('antena2', implantar)
+	implantar_antena('antena3', implantar)
+	implantar_antena('antena4', implantar)
+	implantar_antena('antena5', implantar)
 	#implantar_antena('antena17', implantar)
 	#implantar_antena('antena12', implantar)
 	#oper = {}
@@ -507,7 +587,7 @@ if __name__ == "__main__":
 	#implantar_antena('antena16', implantar)
 	#implantar_antena('antena5', implantar)
 	#implantar_antena('antena6', implantar)
-	exit()
+	#exit()
 	implantar = []
 	config = {}
 	config["dc"] = "regional"
@@ -534,12 +614,12 @@ if __name__ == "__main__":
 	config["tipo"] = "rx"	
 	implantar.append(config)
 	
-	#implantar_antena('antena7', implantar)
-	#implantar_antena('antena8', implantar)
-	#implantar_antena('antena9', implantar)
-	implantar_antena('antena13', implantar)
-	implantar_antena('antena14', implantar)
-	implantar_antena('antena15', implantar)
+	implantar_antena('antena7', implantar)
+	implantar_antena('antena8', implantar)
+	implantar_antena('antena9', implantar)
+	implantar_antena('antena10', implantar)
+	implantar_antena('antena11', implantar)
+	implantar_antena('antena12', implantar)
 	'''implantar_antena('antena13', implantar)
 	implantar_antena('antena14', implantar)
 	implantar_antena('antena15', implantar)

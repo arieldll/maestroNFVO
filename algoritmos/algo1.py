@@ -18,10 +18,14 @@ def maestro_main():
 	FATOR["central"] = 6
 	
 	from matplotlib import pyplot as plt
-	fig1, axes1 = plt.subplots()
+	fig1, axes1 = plt.subplots(1)
+	#axes1.set_ylim(ymin=0)
 	
-	from matplotlib import pyplot as plt2
-	fig2, axes2 = plt2.subplots()
+	#from matplotlib import pyplot as plt2
+	fig2, axes2 = plt.subplots(1)
+	#axes2.set_ylim(ymin=0)
+	
+	fig3, axes3 = plt.subplots(1)
 	
 	pg_edge = RealtimePlot(axes1, 'b')
 	pg_regional = RealtimePlot(axes1, 'g')
@@ -31,8 +35,12 @@ def maestro_main():
 	mg_edge = RealtimePlot(axes2, 'b')
 	mg_regional = RealtimePlot(axes2, 'g')
 	mg_central = RealtimePlot(axes2, 'r')
+	
+	bg_front = RealtimePlot(axes3, 'r')
+	
 	inicio_tempo_start = time.time()	
 	
+	total_banda_anterior = 0
 	
 	while True:
 		print 'Maestro Orchestrator Loop'
@@ -87,6 +95,12 @@ def maestro_main():
 		mg_regional.add(time.time() - inicio_tempo_start, porc_mem_regional)
 		mg_central.add(time.time() - inicio_tempo_start, porc_mem_central)
 		
+		#consulto de banda
+		banda_relacoes, total_consumo_banda = gera_informaces_banda_entre_vms()		
+		bg_front.add(time.time() - inicio_tempo_start, total_consumo_banda)
+		
+		total_banda_anterior = total_consumo_banda
+		
 		plt.pause(0.001)
 		
 		print retorna_informacoes_flows()
@@ -128,6 +142,8 @@ def maestro_main():
 						break
 				else:
 					print 'Nao ha recursos disponiveis para realocar'
+					
+		
 		'''
 		#sobrecarga em algum cloud
 		if porc_proc_edge > 95:			
@@ -187,5 +203,5 @@ def maestro_main():
 			print 'regional - ' + str(porc_proc_regional)
 			print 'central - ' + str(porc_proc_central)
 		#aguardar tempo'''
-		time.sleep(10)
+		time.sleep(20) #tava 10
 		repete += 1
