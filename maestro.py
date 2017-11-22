@@ -378,7 +378,7 @@ class RealtimePlot:
         self.axis_y = deque(maxlen=max_entries)
         self.axes = axes
         self.max_entries = max_entries
-        
+               
         self.lineplot, = axes.plot([], [], color + "o-") #ro-
         self.axes.set_autoscaley_on(True)
 
@@ -507,8 +507,8 @@ if __name__ == "__main__":
 		module = importer.find_module(package_name).load_module(full_package_name)	
 		
 	#gera_informaces_banda_entre_vms()	
-	#module.maestro_main()
-	#exit()
+	module.maestro_main()
+	exit()
 	#deletar_antena('antena17')
 	'''deletar_antena('antena1')
 	deletar_antena('antena2')

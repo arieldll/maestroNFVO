@@ -18,14 +18,18 @@ def maestro_main():
 	FATOR["central"] = 6
 	
 	from matplotlib import pyplot as plt
+	
 	fig1, axes1 = plt.subplots(1)
+	fig1.suptitle("Consumo CPU DC", fontsize=16)
 	#axes1.set_ylim(ymin=0)
 	
 	#from matplotlib import pyplot as plt2
 	fig2, axes2 = plt.subplots(1)
+	fig2.suptitle("Consumo memoria DC", fontsize=16)
 	#axes2.set_ylim(ymin=0)
 	
 	fig3, axes3 = plt.subplots(1)
+	fig3.suptitle("Consumo Banda Fronthaul", fontsize=16)
 	
 	pg_edge = RealtimePlot(axes1, 'b')
 	pg_regional = RealtimePlot(axes1, 'g')
@@ -101,12 +105,12 @@ def maestro_main():
 		
 		total_banda_anterior = total_consumo_banda
 		
-		plt.pause(0.001)
+		#plt.pause(0.001)
 		
 		print retorna_informacoes_flows()
 		
 		cloud_mais_ocupado = ''
-		for c in CLOUDS:
+		'''for c in CLOUDS:
 			disp = {}
 			print '-- Analisando CLOUD ' + c + ' -- .... Livre para ' + str(math.floor((102 - CPU[c]) / FATOR[c]))
 			if CPU[c] > 98:
@@ -144,7 +148,7 @@ def maestro_main():
 					print 'Nao ha recursos disponiveis para realocar'
 					
 		
-		'''
+		
 		#sobrecarga em algum cloud
 		if porc_proc_edge > 95:			
 			move_para = 'regional'
@@ -203,5 +207,5 @@ def maestro_main():
 			print 'regional - ' + str(porc_proc_regional)
 			print 'central - ' + str(porc_proc_central)
 		#aguardar tempo'''
-		time.sleep(20) #tava 10
+		time.sleep(5) #tava 10
 		repete += 1
