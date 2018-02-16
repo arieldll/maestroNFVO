@@ -107,9 +107,9 @@ def maestro_main():
 		
 		#plt.pause(0.001)
 		
-		print retorna_informacoes_flows()
+		#print retorna_informacoes_flows()
 		
-		cloud_mais_ocupado = ''
+		#scloud_mais_ocupado = ''
 		'''for c in CLOUDS:
 			disp = {}
 			print '-- Analisando CLOUD ' + c + ' -- .... Livre para ' + str(math.floor((102 - CPU[c]) / FATOR[c]))

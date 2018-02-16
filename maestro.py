@@ -254,7 +254,7 @@ def deletar_antena(nome_antena):
 		a = req_api(row[0], row[1], "stop")
 		print a
 		a = req_api(row[0], row[1], "delete")
-		print a
+		print 'del' + str(a)
 		p = p + 1
 	#time.sleep(20)
 	if p > 0:
@@ -543,7 +543,7 @@ if __name__ == "__main__":
 	#print edge, regional, central
 	
 	
-	implantar = []
+	'''implantar = []
 	config = {}
 	config["dc"] = "edge"
 	config["tipo"] = "split1"	
@@ -573,7 +573,7 @@ if __name__ == "__main__":
 	implantar_antena('antena2', implantar)
 	implantar_antena('antena3', implantar)
 	implantar_antena('antena4', implantar)
-	implantar_antena('antena5', implantar)
+	implantar_antena('antena5', implantar)'''
 	#implantar_antena('antena17', implantar)
 	#implantar_antena('antena12', implantar)
 	#oper = {}
@@ -613,9 +613,10 @@ if __name__ == "__main__":
 	config["dc"] = "central"
 	config["tipo"] = "rx"	
 	implantar.append(config)
-	
+
+	'''mplantar_antena('antena6', implantar)	
 	implantar_antena('antena7', implantar)
-	implantar_antena('antena8', implantar)
+	implantar_antena('antena8', implantar)'''
 	implantar_antena('antena9', implantar)
 	implantar_antena('antena10', implantar)
 	implantar_antena('antena11', implantar)
