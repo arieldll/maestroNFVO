@@ -9,11 +9,24 @@ import sys
 import matplotlib.pyplot as plt
 import numpy as np
 import random
+import re
 from collections import deque
 
 ASSINATURA_IMAGEM = '86d2a9b674b2'
 
 #req_api(container_pool, container_name, operation, parameters={}):
+
+def retorna_parametros_container(tipo, dc, container):
+	if tipo == 'latencia':
+		oper = {}
+		#ping -c 4 www.stackoverflow.com | tail -1| awk '{print $4}' | cut -d '/' -f 2
+		oper["cmd"] = ["ping", "-I", "tap0", "192.168.200.2", "-c", "5"]		
+		res = req_api(dc, container, 'command_execution', oper)
+		rx = re.compile(r".([+-]?\d+.\d+)/([+-]?\d+.\d+)/([+-]?\d+.\d+)/([+-]?\d+.\d+)", re.VERBOSE)
+		#print res['result'][1]
+		rtt = rx.findall(res['result'][1])
+		return rtt[0][1] #avg
+	
 
 def implantar_antena(nome_antena, lista_implantacao):	
 	#split 1 e 2 estavam na edge
@@ -507,8 +520,8 @@ if __name__ == "__main__":
 		module = importer.find_module(package_name).load_module(full_package_name)	
 		
 	#gera_informaces_banda_entre_vms()	
-	module.maestro_main()
-	exit()
+	#module.maestro_main()
+	#exit()
 	#deletar_antena('antena17')
 	'''deletar_antena('antena1')
 	deletar_antena('antena2')
@@ -522,11 +535,12 @@ if __name__ == "__main__":
 	deletar_antena('antena10')
 	deletar_antena('antena11')
 	deletar_antena('antena12')
-	deletar_antena('antena13')
+	exit()'''
+	'''deletar_antena('antena13')
 	deletar_antena('antena14')
 	deletar_antena('antena15')
-	deletar_antena('antena16')
-	exit()'''
+	deletar_antena('antena16')'''
+	
 	#nome_antena = "antena1"
 	#deletar_antena("antena1")
 	#formata_flows()
@@ -543,9 +557,9 @@ if __name__ == "__main__":
 	#print edge, regional, central
 	
 	
-	'''implantar = []
+	implantar = []
 	config = {}
-	config["dc"] = "edge"
+	config["dc"] = "central"
 	config["tipo"] = "split1"	
 	implantar.append(config)
 	
@@ -555,25 +569,24 @@ if __name__ == "__main__":
 	implantar.append(config)
 	
 	config = {}
-	config["dc"] = "central"
+	config["dc"] = "edge"
 	config["tipo"] = "split3"	
 	implantar.append(config)
 	
 	config = {}
-	config["dc"] = "central"
+	config["dc"] = "edge"
 	config["tipo"] = "usrp"	
 	implantar.append(config)
 	
 	config = {}
-	config["dc"] = "central"
+	config["dc"] = "edge"
 	config["tipo"] = "rx"	
 	implantar.append(config)
 		
-	implantar_antena('antena1', implantar)
+	'''implantar_antena('antena1', implantar)
 	implantar_antena('antena2', implantar)
 	implantar_antena('antena3', implantar)
-	implantar_antena('antena4', implantar)
-	implantar_antena('antena5', implantar)'''
+	implantar_antena('antena4', implantar)'''	
 	#implantar_antena('antena17', implantar)
 	#implantar_antena('antena12', implantar)
 	#oper = {}
@@ -590,12 +603,45 @@ if __name__ == "__main__":
 	#exit()
 	implantar = []
 	config = {}
-	config["dc"] = "regional"
+	config["dc"] = "central"
 	config["tipo"] = "split1"	
 	implantar.append(config)
 	
 	config = {}
 	config["dc"] = "regional"
+	config["tipo"] = "split2"	
+	implantar.append(config)
+	
+	config = {}
+	config["dc"] = "regional"
+	config["tipo"] = "split3"	
+	implantar.append(config)
+	
+	config = {}
+	config["dc"] = "regional"
+	config["tipo"] = "usrp"	
+	implantar.append(config)
+	
+	config = {}
+	config["dc"] = "regional"
+	config["tipo"] = "rx"	
+	implantar.append(config)
+
+	'''implantar_antena('antena5', implantar)
+	implantar_antena('antena6', implantar)	
+	implantar_antena('antena7', implantar)
+	implantar_antena('antena8', implantar)
+	implantar_antena('antena9', implantar)'''
+	
+	
+	implantar = []
+	config = {}
+	config["dc"] = "central"
+	config["tipo"] = "split1"	
+	implantar.append(config)
+	
+	config = {}
+	config["dc"] = "central"
 	config["tipo"] = "split2"	
 	implantar.append(config)
 	
@@ -613,11 +659,7 @@ if __name__ == "__main__":
 	config["dc"] = "central"
 	config["tipo"] = "rx"	
 	implantar.append(config)
-
-	'''mplantar_antena('antena6', implantar)	
-	implantar_antena('antena7', implantar)
-	implantar_antena('antena8', implantar)'''
-	implantar_antena('antena9', implantar)
+	
 	implantar_antena('antena10', implantar)
 	implantar_antena('antena11', implantar)
 	implantar_antena('antena12', implantar)
