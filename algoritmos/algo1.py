@@ -7,8 +7,8 @@ def retorna_informacao_container(dc, container):
 
 def maestro_main():	
 	print 'Iniciando algoritmo personalizado'
-	repete = 0
-	MEMORIA = {}
+	repete = 0  
+	MEMORIA = {}	
 	CPU = {}
 	REDE = {}
 	CLOUDS = ["edge", "regional", "central"]	

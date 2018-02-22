@@ -17,11 +17,14 @@ ASSINATURA_IMAGEM = '86d2a9b674b2'
 #req_api(container_pool, container_name, operation, parameters={}):
 
 def retorna_parametros_container(tipo, dc, container):
+	#print container
 	if tipo == 'latencia':
 		oper = {}
 		#ping -c 4 www.stackoverflow.com | tail -1| awk '{print $4}' | cut -d '/' -f 2
 		oper["cmd"] = ["ping", "-I", "tap0", "192.168.200.2", "-c", "5"]		
-		res = req_api(dc, container, 'command_execution', oper)
+		res = req_api(dc, container, 'command_execution', oper)		
+		#print res
+		#print res['result']
 		rx = re.compile(r".([+-]?\d+.\d+)/([+-]?\d+.\d+)/([+-]?\d+.\d+)/([+-]?\d+.\d+)", re.VERBOSE)
 		#print res['result'][1]
 		rtt = rx.findall(res['result'][1])
@@ -74,7 +77,8 @@ def implantar_antena(nome_antena, lista_implantacao):
 		a = req_api(i["dc"], nome_antena + i["tipo"], "start")
 		print i["tipo"] + '........'
 		print a["message"]
-	
+	1-05
+
 	'''#a = req_api("edge", nome_antena + "split2", "start")
 	a = req_api("regional", nome_antena + "split2", "start")
 	print a["message"]
@@ -526,16 +530,16 @@ if __name__ == "__main__":
 	'''deletar_antena('antena1')
 	deletar_antena('antena2')
 	deletar_antena('antena3')
-	deletar_antena('antena4')
-	deletar_antena('antena5')
+	deletar_antena('antena4')'''
+	'''deletar_antena('antena5')
 	deletar_antena('antena6')
 	deletar_antena('antena7')
 	deletar_antena('antena8')
 	deletar_antena('antena9')
 	deletar_antena('antena10')
 	deletar_antena('antena11')
-	deletar_antena('antena12')
-	exit()'''
+	deletar_antena('antena12')'''
+	#exit()
 	'''deletar_antena('antena13')
 	deletar_antena('antena14')
 	deletar_antena('antena15')
@@ -583,10 +587,11 @@ if __name__ == "__main__":
 	config["tipo"] = "rx"	
 	implantar.append(config)
 		
-	'''implantar_antena('antena1', implantar)
+	implantar_antena('antena1', implantar)
 	implantar_antena('antena2', implantar)
 	implantar_antena('antena3', implantar)
-	implantar_antena('antena4', implantar)'''	
+	implantar_antena('antena4', implantar)
+	#exit()	
 	#implantar_antena('antena17', implantar)
 	#implantar_antena('antena12', implantar)
 	#oper = {}
@@ -627,12 +632,11 @@ if __name__ == "__main__":
 	config["tipo"] = "rx"	
 	implantar.append(config)
 
-	'''implantar_antena('antena5', implantar)
+	implantar_antena('antena5', implantar)
 	implantar_antena('antena6', implantar)	
 	implantar_antena('antena7', implantar)
 	implantar_antena('antena8', implantar)
-	implantar_antena('antena9', implantar)'''
-	
+	implantar_antena('antena9', implantar)
 	
 	implantar = []
 	config = {}
@@ -663,6 +667,7 @@ if __name__ == "__main__":
 	implantar_antena('antena10', implantar)
 	implantar_antena('antena11', implantar)
 	implantar_antena('antena12', implantar)
+	exit()
 	'''implantar_antena('antena13', implantar)
 	implantar_antena('antena14', implantar)
 	implantar_antena('antena15', implantar)
